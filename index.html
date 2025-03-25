@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Gaussian Splats with PointerLock Controls</title>
+		<style>
+			body {
+				margin: 0;
+				padding: 0;
+				overflow: hidden;
+			}
+			#blocker {
+				position: absolute;
+				width: 100%;
+				height: 100%;
+				background-color: rgba(0,0,0,0.5);
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				z-index: 1000;
+			}
+			#instructions {
+				width: 100%;
+				height: 100%;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				text-align: center;
+				font-size: 14px;
+				color: #ffffff;
+				cursor: pointer;
+			}
+			#instructions span {
+				font-size: 36px;
+				margin-bottom: 20px;
+			}
+		</style>
+		<script type="importmap">
+			{
+			  "imports": {
+				"three": "https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.module.js",
+				"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.158.0/examples/jsm/",
+				"@mkkellogg/gaussian-splats-3d": "https://unpkg.com/@mkkellogg/gaussian-splats-3d@0.4.0/build/gaussian-splats-3d.module.js"
+			  }
+			}
+		</script>
+	</head>
+	<body>
+		<div id="blocker">
+			<div id="instructions">
+				<span>Click to play</span>
+				<br>
+				<br>
+				Move: WASD / Arrow Keys<br>
+				Jump: Space<br>
+				Look: Mouse<br>
+				<br>
+				<span style="font-size: 20px;">Point Cloud Controls:</span><br>
+				Rotate: Q/E<br>
+				Scale: Z/X<br>
+				<br>
+				<div style="font-size: 12px; color: #aaa;">
+					UI buttons for rotation, scaling, and movement are available outside of fullscreen mode.<br>
+					If keyboard keys are not working, try using the on-screen buttons instead.
+				</div>
+			</div>
+		</div>
+		<script type="module" src="main.js"></script>
+	</body>
+</html>
