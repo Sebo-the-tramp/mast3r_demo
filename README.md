@@ -1,89 +1,60 @@
-# Gaussian Splats Transformation Tool
+# Gaussian Splats Web Viewer Demo
 
-This repository contains tools for transforming Gaussian Splats stored in PLY format. The tools allow you to scale and rotate your Gaussian Splats before loading them in your web application.
+This repository contains a web-based demo for viewing Gaussian Splats using Three.js. The demo loads PLY files containing 3D Gaussian splats and displays them in an interactive web environment.
 
-## Requirements
+## Overview
 
-Install the required dependencies:
+This demo showcases:
+- Loading Gaussian Splat PLY files directly in the browser
+- Interactive camera controls for exploring the 3D scene
+- First-person navigation (WASD/arrow keys) and mouse look controls
+- On-screen buttons for mobile compatibility
 
-```bash
-pip install -r requirements.txt
-```
+## Usage
 
-## Scripts
+1. Clone this repository
+2. Host the files on a web server (or use a tool like `python -m http.server`)
+3. Open `index.html` in your browser
+4. Your PLY file will be loaded and displayed automatically
 
-Two different scripts are provided:
+## Transforming Gaussian Splats
 
-### 1. transform_splats.py
+If you need to transform your Gaussian Splats (scaling, rotation, etc.), we use an external repository for this purpose. Please follow these steps:
 
-This script uses Open3D and is a general-purpose point cloud transformation tool. It works for most PLY files but might not handle all specific fields in Gaussian Splats files.
+1. Visit the [gaussian-splats-transformation](https://github.com/yzslab/gaussian-splatting-lightning) repository
+2. Follow their README for installation instructions
+3. Use their transformation tools as described in their documentation
 
-```bash
-python transform_splats.py input.ply output.ply --scale 2.0 --rotate-x 0 --rotate-y 45.0 --rotate-z 0
-```
-
-### 2. transform_gaussian_splats.py
-
-This is a specialized script for Gaussian Splats that directly manipulates the PLY file structure, preserving all attributes. It also includes a visualization option.
-
-```bash
-python transform_gaussian_splats.py input.ply output.ply --scale 2.0 --rotate-x 0 --rotate-y 45.0 --rotate-z 0 --visualize
-```
-
-## Usage Examples
-
-### Basic scaling
-
-Double the size of the point cloud:
+Example transformation commands from that repository:
 
 ```bash
+# Scale the model by 2.0
 python transform_gaussian_splats.py splat.ply scaled_splat.ply --scale 2.0
-```
 
-### Rotation
-
-Rotate the model 90 degrees around Y axis:
-
-```bash
+# Rotate around Y axis by 90 degrees
 python transform_gaussian_splats.py splat.ply rotated_splat.ply --rotate-y 90
-```
 
-### Rotation around multiple axes
-
-Rotate the model around all three axes:
-
-```bash
-python transform_gaussian_splats.py splat.ply rotated_splat.ply --rotate-x 30 --rotate-y 45 --rotate-z 15
-```
-
-### Combined transformations
-
-Scale and rotate at the same time:
-
-```bash
-python transform_gaussian_splats.py splat.ply transformed_splat.ply --scale 1.5 --rotate-y 45
-```
-
-### With visualization
-
-Add the `--visualize` flag to see a preview of the transformation:
-
-```bash
+# Combined transformation with visualization
 python transform_gaussian_splats.py splat.ply transformed_splat.ply --scale 1.5 --rotate-x 30 --rotate-y 45 --rotate-z 15 --visualize
 ```
 
-## Important Notes
+After transforming your PLY file, you can load it in this web viewer.
 
-1. The scripts handle position data and scale attributes, but rotation of Gaussian Splat orientations is complex and might require format-specific handling.
+## Controls
 
-2. Always backup your original PLY files before transforming.
+- **WASD/Arrow Keys**: Move around
+- **Space**: Jump
+- **Mouse**: Look around
+- **ESC**: Exit pointer lock mode
+- **UI Buttons**: Alternative controls for rotation, scaling, and movement
 
-3. If you encounter issues with the Open3D-based script, try the specialized `transform_gaussian_splats.py` which gives more direct control over the file format.
+## Requirements
 
-4. For very large PLY files, these scripts might require significant memory.
+- Modern browser with WebGL support
+- For transforming PLY files: Python with dependencies from the transformation repository
 
-5. The rotation applies Euler angles in XYZ order: first around X axis, then around Y axis, then around Z axis.
+## Notes
 
-## Integration with Web Application
-
-After transforming your splat file, replace `splat.ply` in your web application with the transformed file. This eliminates the need for runtime transformation in JavaScript, which can be more efficient. 
+1. Performance depends on the size and complexity of the Gaussian Splat model
+2. The viewer is designed to work with PLY files produced by Gaussian Splatting implementations
+3. Pre-transformed files load faster and perform better than applying transformations at runtime 

@@ -17,16 +17,6 @@ let prevTime = performance.now();
 const velocity = new THREE.Vector3();
 const direction = new THREE.Vector3();
 
-// Variables for point cloud transformation
-let rotateLeft = false;
-let rotateRight = false;
-let scaleUp = false;
-let scaleDown = false;
-const rotationSpeed = 0.5; // radians per second
-const scaleSpeed = 0.1; // scale factor per second
-let pointCloudScale = 1.0;
-let pointCloudRotation = 0;
-
 // Create root element
 const rootElement = document.createElement('div');
 rootElement.style.width = '100%';
@@ -59,32 +49,6 @@ const createButton = (text, position, onClick) => {
     document.body.appendChild(button);
     return button;
 };
-
-// Create UI controls
-const rotateLeftBtn = createButton('← Rotate', { left: '10px', top: '10px' }, () => {
-    pointCloudRotation -= 0.1;
-    if (splatContainer) splatContainer.rotation.y = pointCloudRotation;
-    viewer.setSceneTransform(splatContainer);
-});
-
-const rotateRightBtn = createButton('Rotate →', { left: '100px', top: '10px' }, () => {
-    pointCloudRotation += 0.1;
-    if (splatContainer) splatContainer.rotation.y = pointCloudRotation;
-    viewer.setSceneTransform(splatContainer);
-});
-
-const scaleUpBtn = createButton('Scale +', { left: '10px', top: '60px' }, () => {
-    pointCloudScale += 0.1;
-    if (splatContainer) splatContainer.scale.set(pointCloudScale, pointCloudScale, pointCloudScale);
-    viewer.setSceneTransform(splatContainer);
-});
-
-const scaleDownBtn = createButton('Scale -', { left: '100px', top: '60px' }, () => {
-    pointCloudScale = Math.max(0.1, pointCloudScale - 0.1);
-    if (splatContainer) splatContainer.scale.set(pointCloudScale, pointCloudScale, pointCloudScale);
-    viewer.setSceneTransform(splatContainer);
-});
-
 // Alternative movement buttons for mobile or keyboard issues
 const moveForwardBtn = createButton('↑', { left: 'calc(100% - 120px)', top: '60px' }, () => {
     velocity.z -= 1.0;
@@ -166,10 +130,6 @@ controls.addEventListener('lock', function () {
     instructions.style.display = 'none';
     blocker.style.display = 'none';
     // Hide UI buttons during pointer lock
-    rotateLeftBtn.style.display = 'none';
-    rotateRightBtn.style.display = 'none';
-    scaleUpBtn.style.display = 'none';
-    scaleDownBtn.style.display = 'none';
     moveForwardBtn.style.display = 'none';
     moveBackwardBtn.style.display = 'none';
     moveLeftBtn.style.display = 'none';
@@ -181,10 +141,6 @@ controls.addEventListener('unlock', function () {
     blocker.style.display = 'block';
     instructions.style.display = '';
     // Show UI buttons when not in pointer lock
-    rotateLeftBtn.style.display = 'block';
-    rotateRightBtn.style.display = 'block';
-    scaleUpBtn.style.display = 'block';
-    scaleDownBtn.style.display = 'block';
     moveForwardBtn.style.display = 'block';
     moveBackwardBtn.style.display = 'block';
     moveLeftBtn.style.display = 'block';
@@ -216,18 +172,6 @@ const onKeyDown = function (event) {
             if (canJump === true) velocity.y += 20;
             canJump = false;
             break;
-        case 'KeyQ': // Rotate left
-            rotateLeft = true;
-            break;
-        case 'KeyE': // Rotate right
-            rotateRight = true;
-            break;
-        case 'KeyZ': // Scale down
-            scaleDown = true;
-            break;
-        case 'KeyX': // Scale up
-            scaleUp = true;
-            break;
     }
 };
 
@@ -249,18 +193,6 @@ const onKeyUp = function (event) {
         case 'ArrowRight':
         case 'KeyD':
             moveRight = false;
-            break;
-        case 'KeyQ': // Rotate left
-            rotateLeft = false;
-            break;
-        case 'KeyE': // Rotate right
-            rotateRight = false;
-            break;
-        case 'KeyZ': // Scale down
-            scaleDown = false;
-            break;
-        case 'KeyX': // Scale up
-            scaleUp = false;
             break;
     }
 };
@@ -297,7 +229,7 @@ window.addEventListener('resize', function () {
 });
 
 // Load the splat scene
-viewer.addSplatScene('./splat_scaled.ply')
+viewer.addSplatScene('https://huggingface.co/datasets/sebothetramp/Gaussian_Splat_MBZUAI/resolve/main/splat_scaled.ply')
 .then(() => {
     console.log('Splat scene loaded');
     requestAnimationFrame(update);
@@ -309,27 +241,6 @@ function update() {
     
     const time = performance.now();
     const delta = (time - prevTime) / 1000;
-    
-    // Handle point cloud transformations
-    if (rotateLeft || rotateRight) {
-        const rotationAmount = (rotateRight ? 1 : 0) - (rotateLeft ? 1 : 0);
-        pointCloudRotation += rotationAmount * rotationSpeed * delta;
-        splatContainer.rotation.y = pointCloudRotation;
-        
-        // Force re-render
-        viewer.setSceneTransform(splatContainer);
-    }
-    
-    if (scaleUp || scaleDown) {
-        const scaleAmount = (scaleUp ? 1 : 0) - (scaleDown ? 1 : 0);
-        pointCloudScale += scaleAmount * scaleSpeed * delta;
-        pointCloudScale = Math.max(0.1, Math.min(pointCloudScale, 5.0)); // Clamp scale between 0.1 and 5.0
-        
-        splatContainer.scale.set(pointCloudScale, pointCloudScale, pointCloudScale);
-        
-        // Force re-render
-        viewer.setSceneTransform(splatContainer);
-    }
     
     if (controls.isLocked === true) {
         // Apply physics
