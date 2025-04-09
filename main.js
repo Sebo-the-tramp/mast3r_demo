@@ -12,8 +12,7 @@ let moveForward = false;
 let moveBackward = false;
 let moveLeft = false;
 let moveRight = false;
-let moveUp = false;
-let moveDown = false;
+let canJump = false;
 let prevTime = performance.now();
 const velocity = new THREE.Vector3();
 const direction = new THREE.Vector3();
@@ -50,7 +49,7 @@ const createButton = (text, position, onClick) => {
     document.body.appendChild(button);
     return button;
 };
-// // Alternative movement buttons for mobile or keyboard issues
+// Alternative movement buttons for mobile or keyboard issues
 // const moveForwardBtn = createButton('↑', { left: 'calc(100% - 120px)', top: '60px' }, () => {
 //     velocity.z -= 1.0;
 // });
@@ -232,12 +231,10 @@ const onKeyDown = function (event) {
         case 'KeyD':
             moveRight = true;
             break;
-        case 'KeyE':
-            moveUp = true;
-            break;
-        case 'KeyQ':
-            moveDown = true;
-            break;
+        // case 'Space':
+        //     if (canJump === true) velocity.y += 20;
+        //     canJump = false;
+        //     break;
     }
 };
 
@@ -259,12 +256,6 @@ const onKeyUp = function (event) {
         case 'ArrowRight':
         case 'KeyD':
             moveRight = false;
-            break;
-        case 'KeyE':
-            moveUp = false;
-            break;
-        case 'KeyQ':
-            moveDown = false;
             break;
     }
 };
@@ -322,6 +313,7 @@ function update() {
         // Apply physics
         velocity.x -= velocity.x * 10.0 * delta;
         velocity.z -= velocity.z * 10.0 * delta;
+        velocity.y -= 9.8 * 10.0 * delta; // gravity
         
         // Get movement direction
         direction.z = Number(moveForward) - Number(moveBackward);
@@ -332,13 +324,18 @@ function update() {
         if (moveForward || moveBackward) velocity.z -= direction.z * 40.0 * delta;
         if (moveLeft || moveRight) velocity.x -= direction.x * 40.0 * delta;
         
-        // Apply vertical movement to the splat container
-        if (moveUp) splatContainer.position.y += 20.0 * delta;
-        if (moveDown) splatContainer.position.y -= 20.0 * delta;
-        
         // Move the camera
         controls.moveRight(-velocity.x * delta);
         controls.moveForward(-velocity.z * delta);
+        
+        camera.position.y += velocity.y * delta;
+        
+        // Floor constraint
+        if (camera.position.y < 1.0) {
+            velocity.y = 0;
+            camera.position.y = 1.0;
+            canJump = true;
+        }
     }
     
     prevTime = time;
