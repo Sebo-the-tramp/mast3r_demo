@@ -12,7 +12,8 @@ let moveForward = false;
 let moveBackward = false;
 let moveLeft = false;
 let moveRight = false;
-let canJump = false;
+let moveUp = false;
+let moveDown = false;
 let prevTime = performance.now();
 const velocity = new THREE.Vector3();
 const direction = new THREE.Vector3();
@@ -49,27 +50,27 @@ const createButton = (text, position, onClick) => {
     document.body.appendChild(button);
     return button;
 };
-// Alternative movement buttons for mobile or keyboard issues
-const moveForwardBtn = createButton('↑', { left: 'calc(100% - 120px)', top: '60px' }, () => {
-    velocity.z -= 1.0;
-});
+// // Alternative movement buttons for mobile or keyboard issues
+// const moveForwardBtn = createButton('↑', { left: 'calc(100% - 120px)', top: '60px' }, () => {
+//     velocity.z -= 1.0;
+// });
 
-const moveBackwardBtn = createButton('↓', { left: 'calc(100% - 120px)', top: '110px' }, () => {
-    velocity.z += 1.0;
-});
+// const moveBackwardBtn = createButton('↓', { left: 'calc(100% - 120px)', top: '110px' }, () => {
+//     velocity.z += 1.0;
+// });
 
-const moveLeftBtn = createButton('←', { left: 'calc(100% - 170px)', top: '110px' }, () => {
-    velocity.x -= 1.0;
-});
+// const moveLeftBtn = createButton('←', { left: 'calc(100% - 170px)', top: '110px' }, () => {
+//     velocity.x -= 1.0;
+// });
 
-const moveRightBtn = createButton('→', { left: 'calc(100% - 70px)', top: '110px' }, () => {
-    velocity.x += 1.0;
-});
+// const moveRightBtn = createButton('→', { left: 'calc(100% - 70px)', top: '110px' }, () => {
+//     velocity.x += 1.0;
+// });
 
-const jumpBtn = createButton('Jump', { left: 'calc(100% - 120px)', top: '10px' }, () => {
-    if (canJump === true) velocity.y += 20;
-    canJump = false;
-});
+// const jumpBtn = createButton('Jump', { left: 'calc(100% - 120px)', top: '10px' }, () => {
+//     if (canJump === true) velocity.y += 20;
+//     canJump = false;
+// });
 
 // Set up camera
 const camera = new THREE.PerspectiveCamera(45, renderWidth / renderHeight, 0.1, 500); // Reduced field of view for a "smaller" camera effect
@@ -80,9 +81,72 @@ camera.lookAt(new THREE.Vector3(0, 0, 0));
 // Set up scene
 const scene = new THREE.Scene();
 
+// Define available scenes
+const scenes = {
+    // local: './data/splat.ply',
+    // local: '/Users/sebastiancavada/Documents/scsv/thesis/thesis_2025/mast3r_demo/data/2025-04-05_100917/exports/splat/splat.ply',
+    // local: './data/2025-04-05_100917/exports/splat/splat.ply',
+    main: 'https://huggingface.co/datasets/sebothetramp/Gaussian_Splat_MBZUAI/resolve/main/splat_scaled.ply',
+    // full_campus: 'https://huggingface.co/datasets/sebothetramp/Gaussian_Splat_MBZUAI/resolve/main/full_splat_scaled.ply',
+    entrance: 'https://huggingface.co/datasets/sebothetramp/Gaussian_Splat_MBZUAI/resolve/main/entrance_splat_scaled.ply',
+    hydro: 'https://huggingface.co/datasets/sebothetramp/Gaussian_Splat_MBZUAI/resolve/main/hydro_splat_scaled.ply',
+    nlp: 'https://huggingface.co/datasets/sebothetramp/Gaussian_Splat_MBZUAI/resolve/main/nlp_splat_scaled.ply',
+};
+
+// Function to generate scene buttons
+function generateSceneButtons() {
+    const container = document.getElementById('scene-buttons');
+    container.innerHTML = ''; // Clear existing buttons
+    
+    Object.keys(scenes).forEach(sceneKey => {
+        const button = document.createElement('button');
+        button.className = 'scene-button';
+        button.dataset.scene = sceneKey;
+        // Capitalize first letter and replace underscores with spaces
+        button.textContent = sceneKey.charAt(0).toUpperCase() + sceneKey.slice(1).replace(/_/g, ' ');
+        
+        button.addEventListener('click', (e) => {
+            const sceneKey = e.target.dataset.scene;
+            loadScene(sceneKey);
+        });
+        
+        container.appendChild(button);
+    });
+}
+
+let currentScene = 'main';
+
 // Create a container for the splat scene to allow transformations
 const splatContainer = new THREE.Group();
 scene.add(splatContainer);
+
+// Function to load a new scene
+async function loadScene(sceneKey) {
+    try {
+        // Remove existing splat container from scene
+        scene.remove(splatContainer);
+        
+        // Create a new container
+        const newSplatContainer = new THREE.Group();
+        scene.add(newSplatContainer);
+        
+        // Update the viewer's root node
+        viewer.rootNode = newSplatContainer;
+        
+        // Load new scene
+        await viewer.addSplatScene(scenes[sceneKey]);
+        currentScene = sceneKey;
+        
+        // Update UI
+        document.querySelectorAll('.scene-button').forEach(button => {
+            button.classList.toggle('active', button.dataset.scene === sceneKey);
+        });
+        
+        console.log(`Scene ${sceneKey} loaded successfully`);
+    } catch (error) {
+        console.error(`Error loading scene ${sceneKey}:`, error);
+    }
+}
 
 // Set up viewer for Gaussian Splats
 const viewer = new GaussianSplats3D.Viewer({
@@ -130,22 +194,22 @@ controls.addEventListener('lock', function () {
     instructions.style.display = 'none';
     blocker.style.display = 'none';
     // Hide UI buttons during pointer lock
-    moveForwardBtn.style.display = 'none';
-    moveBackwardBtn.style.display = 'none';
-    moveLeftBtn.style.display = 'none';
-    moveRightBtn.style.display = 'none';
-    jumpBtn.style.display = 'none';
+    // moveForwardBtn.style.display = 'none';
+    // moveBackwardBtn.style.display = 'none';
+    // moveLeftBtn.style.display = 'none';
+    // moveRightBtn.style.display = 'none';
+    // jumpBtn.style.display = 'none';
 });
 
 controls.addEventListener('unlock', function () {
     blocker.style.display = 'block';
     instructions.style.display = '';
     // Show UI buttons when not in pointer lock
-    moveForwardBtn.style.display = 'block';
-    moveBackwardBtn.style.display = 'block';
-    moveLeftBtn.style.display = 'block';
-    moveRightBtn.style.display = 'block';
-    jumpBtn.style.display = 'block';
+    // moveForwardBtn.style.display = 'block';
+    // moveBackwardBtn.style.display = 'block';
+    // moveLeftBtn.style.display = 'block';
+    // moveRightBtn.style.display = 'block';
+    // jumpBtn.style.display = 'block';
 });
 
 // Add key controls
@@ -168,9 +232,11 @@ const onKeyDown = function (event) {
         case 'KeyD':
             moveRight = true;
             break;
-        case 'Space':
-            if (canJump === true) velocity.y += 20;
-            canJump = false;
+        case 'KeyE':
+            moveUp = true;
+            break;
+        case 'KeyQ':
+            moveDown = true;
             break;
     }
 };
@@ -193,6 +259,12 @@ const onKeyUp = function (event) {
         case 'ArrowRight':
         case 'KeyD':
             moveRight = false;
+            break;
+        case 'KeyE':
+            moveUp = false;
+            break;
+        case 'KeyQ':
+            moveDown = false;
             break;
     }
 };
@@ -228,10 +300,14 @@ window.addEventListener('resize', function () {
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-// Load the splat scene
-viewer.addSplatScene('https://huggingface.co/datasets/sebothetramp/Gaussian_Splat_MBZUAI/resolve/main/splat_scaled.ply')
-.then(() => {
-    console.log('Splat scene loaded');
+// Generate scene buttons after DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    generateSceneButtons();
+});
+
+// Load initial scene
+loadScene('main').then(() => {
+    console.log('Initial scene loaded');
     requestAnimationFrame(update);
 });
 
@@ -246,7 +322,6 @@ function update() {
         // Apply physics
         velocity.x -= velocity.x * 10.0 * delta;
         velocity.z -= velocity.z * 10.0 * delta;
-        velocity.y -= 9.8 * 10.0 * delta; // gravity
         
         // Get movement direction
         direction.z = Number(moveForward) - Number(moveBackward);
@@ -257,18 +332,13 @@ function update() {
         if (moveForward || moveBackward) velocity.z -= direction.z * 40.0 * delta;
         if (moveLeft || moveRight) velocity.x -= direction.x * 40.0 * delta;
         
+        // Apply vertical movement to the splat container
+        if (moveUp) splatContainer.position.y += 20.0 * delta;
+        if (moveDown) splatContainer.position.y -= 20.0 * delta;
+        
         // Move the camera
         controls.moveRight(-velocity.x * delta);
         controls.moveForward(-velocity.z * delta);
-        
-        camera.position.y += velocity.y * delta;
-        
-        // Floor constraint
-        if (camera.position.y < 1.0) {
-            velocity.y = 0;
-            camera.position.y = 1.0;
-            canJump = true;
-        }
     }
     
     prevTime = time;

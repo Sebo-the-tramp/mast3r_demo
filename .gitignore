@@ -1,4 +1,7 @@
 /gaussian-splatting-lightning/*
 gaussian-splatting-lightning/*
 
+/data/*
+data/*
+
 *.ply
