@@ -136,6 +136,13 @@ async function loadScene(sceneKey) {
         await viewer.addSplatScene(scenes[sceneKey]);
         currentScene = sceneKey;
         
+        // Reset camera position and controls
+        camera.position.set(-1, 1.5, 4);
+        camera.lookAt(new THREE.Vector3(0, 0, 0));
+        controls.moveRight(0);
+        controls.moveForward(0);
+        velocity.set(0, 0, 0);
+        
         // Update UI
         document.querySelectorAll('.scene-button').forEach(button => {
             button.classList.toggle('active', button.dataset.scene === sceneKey);
